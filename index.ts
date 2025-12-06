@@ -174,7 +174,7 @@ sockets.map((s) => {
 //   }
 // });
 
-function handlePacket(id: number, data: Buffer, socket) {
+function handlePacket(id: number, data: Buffer, socket: net.Socket) {
   // --- LOGIN SUCCESS ---
   if (id === 0x02) {
     console.log("Login avvenuto con successo!");
