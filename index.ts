@@ -51,84 +51,130 @@ const PORT = 25565; // porta del server LAN
 const USERNAME = "TestBot";
 const PROTOCOL_VERSION = 754; // 1.16.5
 
+const botNames = ["Puglia", "Castiello", "Telli"];
+
 let buffer = Buffer.alloc(0);
 
-const socket = net.connect(PORT, HOST, () => {
-  console.log("Connesso al server");
+const sockets = botNames.map((s, i) =>
+  net.connect(PORT, HOST, () => {
+    console.log("Connesso al server");
 
-  // --- HANDSHAKE ---
-  const handshake = Buffer.concat([
-    writeVarInt(PROTOCOL_VERSION),
-    writeString(HOST),
-    Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
-    writeVarInt(2), // next state = login
-  ]);
-  sendPacket(socket, 0x00, handshake);
+    // --- HANDSHAKE ---
+    const handshake = Buffer.concat([
+      writeVarInt(PROTOCOL_VERSION),
+      writeString(HOST),
+      Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
+      writeVarInt(2), // next state = login
+    ]);
+    sendPacket(sockets[i], 0x00, handshake);
 
-  // --- LOGIN START ---
-  sendPacket(socket, 0x00, writeString(USERNAME));
+    // --- LOGIN START ---
+    sendPacket(sockets[i], 0x00, writeString(s));
+  })
+);
+
+sockets.map((s) => {
+  s.on("data", (data) => {
+    buffer = Buffer.concat([buffer, data]);
+
+    while (true) {
+      const lengthInfo = readVarInt(buffer);
+      if (!lengthInfo) return;
+      const packetLength = lengthInfo.value;
+      const start = lengthInfo.size;
+      if (buffer.length < start + packetLength) return;
+
+      let packetData = buffer.slice(start, start + packetLength);
+      buffer = buffer.slice(start + packetLength);
+
+      const idInfo = readVarInt(packetData);
+      const packetId = idInfo.value;
+      const payload = packetData.slice(idInfo.size);
+
+      handlePacket(packetId, payload, s);
+    }
+  });
+
+  s.on("error", console.error);
+  s.on("close", () => console.log("Connessione chiusa"));
 });
 
-const socket2 = net.connect(PORT, HOST, () => {
-  console.log("Connesso al server");
+// const socket = net.connect(PORT, HOST, () => {
+//   console.log("Connesso al server");
 
-  // --- HANDSHAKE ---
-  const handshake = Buffer.concat([
-    writeVarInt(PROTOCOL_VERSION),
-    writeString(HOST),
-    Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
-    writeVarInt(2), // next state = login
-  ]);
-  sendPacket(socket2, 0x00, handshake);
+//   // --- HANDSHAKE ---
+//   const handshake = Buffer.concat([
+//     writeVarInt(PROTOCOL_VERSION),
+//     writeString(HOST),
+//     Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
+//     writeVarInt(2), // next state = login
+//   ]);
+//   sendPacket(socket, 0x00, handshake);
 
-  // --- LOGIN START ---
-  sendPacket(socket2, 0x00, writeString("Bot 2"));
-});
+//   // --- LOGIN START ---
+//   sendPacket(socket, 0x00, writeString(USERNAME));
+// });
+
+// const socket2 = net.connect(PORT, HOST, () => {
+//   console.log("Connesso al server");
+
+//   // --- HANDSHAKE ---
+//   const handshake = Buffer.concat([
+//     writeVarInt(PROTOCOL_VERSION),
+//     writeString(HOST),
+//     Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
+//     writeVarInt(2), // next state = login
+//   ]);
+//   sendPacket(socket2, 0x00, handshake);
+
+//   // --- LOGIN START ---
+//   sendPacket(socket2, 0x00, writeString("Bot 2"));
+// });
 
 // --- RECEIVE DATA ---
-socket.on("data", (data) => {
-  buffer = Buffer.concat([buffer, data]);
+// socket.on("data", (data) => {
+//   buffer = Buffer.concat([buffer, data]);
 
-  while (true) {
-    const lengthInfo = readVarInt(buffer);
-    if (!lengthInfo) return;
-    const packetLength = lengthInfo.value;
-    const start = lengthInfo.size;
-    if (buffer.length < start + packetLength) return;
+//   while (true) {
+//     const lengthInfo = readVarInt(buffer);
+//     if (!lengthInfo) return;
+//     const packetLength = lengthInfo.value;
+//     const start = lengthInfo.size;
+//     if (buffer.length < start + packetLength) return;
 
-    let packetData = buffer.slice(start, start + packetLength);
-    buffer = buffer.slice(start + packetLength);
+//     let packetData = buffer.slice(start, start + packetLength);
+//     buffer = buffer.slice(start + packetLength);
 
-    const idInfo = readVarInt(packetData);
-    const packetId = idInfo.value;
-    const payload = packetData.slice(idInfo.size);
+//     const idInfo = readVarInt(packetData);
+//     const packetId = idInfo.value;
+//     const payload = packetData.slice(idInfo.size);
 
-    handlePacket(packetId, payload);
-  }
-});
+//     handlePacket(packetId, payload);
+//   }
+// });
 
-socket2.on("data", (data) => {
-  buffer = Buffer.concat([buffer, data]);
+// socket2.on("data", (data) => {
+//   buffer = Buffer.concat([buffer, data]);
 
-  while (true) {
-    const lengthInfo = readVarInt(buffer);
-    if (!lengthInfo) return;
-    const packetLength = lengthInfo.value;
-    const start = lengthInfo.size;
-    if (buffer.length < start + packetLength) return;
+//   while (true) {
+//     const lengthInfo = readVarInt(buffer);
+//     if (!lengthInfo) return;
+//     const packetLength = lengthInfo.value;
+//     const start = lengthInfo.size;
+//     if (buffer.length < start + packetLength) return;
 
-    let packetData = buffer.slice(start, start + packetLength);
-    buffer = buffer.slice(start + packetLength);
+//     let packetData = buffer.slice(start, start + packetLength);
+//     buffer = buffer.slice(start + packetLength);
 
-    const idInfo = readVarInt(packetData);
-    const packetId = idInfo.value;
-    const payload = packetData.slice(idInfo.size);
+//     const idInfo = readVarInt(packetData);
+//     const packetId = idInfo.value;
+//     const payload = packetData.slice(idInfo.size);
 
-    handlePacket(packetId, payload);
-  }
-});
+//     handlePacket(packetId, payload);
+//   }
+// });
 
-function handlePacket(id: number, data: Buffer) {
+function handlePacket(id: number, data: Buffer, socket) {
   // --- LOGIN SUCCESS ---
   if (id === 0x02) {
     console.log("Login avvenuto con successo!");
@@ -153,5 +199,5 @@ function handlePacket(id: number, data: Buffer) {
   console.log("Pacchetto ricevuto ID:", id);
 }
 
-socket.on("error", console.error);
-socket.on("close", () => console.log("Connessione chiusa"));
+// socket.on("error", console.error);
+// socket.on("close", () => console.log("Connessione chiusa"));
