@@ -88,10 +88,10 @@ sockets.map((s) => {
       buffer = buffer.slice(start + packetLength);
 
       const idInfo = readVarInt(packetData);
-      const packetId = idInfo.value;
-      const payload = packetData.slice(idInfo.size);
+      const packetId = idInfo?.value;
+      const payload = packetData.slice(idInfo?.size);
 
-      handlePacket(packetId, payload, s);
+      if (packetId) handlePacket(packetId, payload, s);
     }
   });
 

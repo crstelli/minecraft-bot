@@ -81,9 +81,10 @@ sockets.map(function (s) {
             var packetData = buffer.slice(start, start + packetLength);
             buffer = buffer.slice(start + packetLength);
             var idInfo = readVarInt(packetData);
-            var packetId = idInfo.value;
-            var payload = packetData.slice(idInfo.size);
-            handlePacket(packetId, payload, s);
+            var packetId = idInfo === null || idInfo === void 0 ? void 0 : idInfo.value;
+            var payload = packetData.slice(idInfo === null || idInfo === void 0 ? void 0 : idInfo.size);
+            if (packetId)
+                handlePacket(packetId, payload, s);
         }
     });
     s.on("error", console.error);
