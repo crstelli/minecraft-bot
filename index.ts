@@ -48,10 +48,9 @@ function sendPacket(socket: net.Socket, id: number, data: Buffer) {
 // =====================
 const HOST = "localhost"; // Server IP
 const PORT = 25565; // LAN Port
-const USERNAME = "TestBot";
 const PROTOCOL_VERSION = 754; // Minecraft Version 1.16.5
 
-const botNames = ["Puglia", "Castiello", "Telli"];
+const botNames = ["Bot 1", "Bot 2", "Bot 3", "Bot 4", "Bot 5", "Bot 6", "Bot 7", "Bot 8", "Bot 9", "Bot 10"];
 
 let buffer = Buffer.alloc(0);
 

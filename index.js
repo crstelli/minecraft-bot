@@ -46,11 +46,10 @@ function sendPacket(socket, id, data) {
 // =====================
 // CONFIG BOT
 // =====================
-var HOST = "localhost"; // il tuo IP LAN
-var PORT = 25565; // porta del server LAN
-var USERNAME = "TestBot";
-var PROTOCOL_VERSION = 754; // 1.16.5
-var botNames = ["Puglia", "Castiello", "Telli"];
+var HOST = "localhost"; // Server IP
+var PORT = 25565; // LAN Port
+var PROTOCOL_VERSION = 754; // Minecraft Version 1.16.5
+var botNames = ["Bot 1", "Bot 2", "Bot 3", "Bot 4", "Bot 5", "Bot 6", "Bot 7", "Bot 8", "Bot 9", "Bot 10"];
 var buffer = Buffer.alloc(0);
 var sockets = botNames.map(function (s, i) {
     return net.connect(PORT, HOST, function () {
@@ -90,65 +89,6 @@ sockets.map(function (s) {
     s.on("error", console.error);
     s.on("close", function () { return console.log("Connessione chiusa"); });
 });
-// const socket = net.connect(PORT, HOST, () => {
-//   console.log("Connesso al server");
-//   // --- HANDSHAKE ---
-//   const handshake = Buffer.concat([
-//     writeVarInt(PROTOCOL_VERSION),
-//     writeString(HOST),
-//     Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
-//     writeVarInt(2), // next state = login
-//   ]);
-//   sendPacket(socket, 0x00, handshake);
-//   // --- LOGIN START ---
-//   sendPacket(socket, 0x00, writeString(USERNAME));
-// });
-// const socket2 = net.connect(PORT, HOST, () => {
-//   console.log("Connesso al server");
-//   // --- HANDSHAKE ---
-//   const handshake = Buffer.concat([
-//     writeVarInt(PROTOCOL_VERSION),
-//     writeString(HOST),
-//     Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
-//     writeVarInt(2), // next state = login
-//   ]);
-//   sendPacket(socket2, 0x00, handshake);
-//   // --- LOGIN START ---
-//   sendPacket(socket2, 0x00, writeString("Bot 2"));
-// });
-// --- RECEIVE DATA ---
-// socket.on("data", (data) => {
-//   buffer = Buffer.concat([buffer, data]);
-//   while (true) {
-//     const lengthInfo = readVarInt(buffer);
-//     if (!lengthInfo) return;
-//     const packetLength = lengthInfo.value;
-//     const start = lengthInfo.size;
-//     if (buffer.length < start + packetLength) return;
-//     let packetData = buffer.slice(start, start + packetLength);
-//     buffer = buffer.slice(start + packetLength);
-//     const idInfo = readVarInt(packetData);
-//     const packetId = idInfo.value;
-//     const payload = packetData.slice(idInfo.size);
-//     handlePacket(packetId, payload);
-//   }
-// });
-// socket2.on("data", (data) => {
-//   buffer = Buffer.concat([buffer, data]);
-//   while (true) {
-//     const lengthInfo = readVarInt(buffer);
-//     if (!lengthInfo) return;
-//     const packetLength = lengthInfo.value;
-//     const start = lengthInfo.size;
-//     if (buffer.length < start + packetLength) return;
-//     let packetData = buffer.slice(start, start + packetLength);
-//     buffer = buffer.slice(start + packetLength);
-//     const idInfo = readVarInt(packetData);
-//     const packetId = idInfo.value;
-//     const payload = packetData.slice(idInfo.size);
-//     handlePacket(packetId, payload);
-//   }
-// });
 function handlePacket(id, data, socket) {
     // --- LOGIN SUCCESS ---
     if (id === 0x02) {
@@ -170,5 +110,3 @@ function handlePacket(id, data, socket) {
     }
     console.log("Pacchetto ricevuto ID:", id);
 }
-// socket.on("error", console.error);
-// socket.on("close", () => console.log("Connessione chiusa"));
