@@ -64,8 +64,39 @@ var socket = net.connect(PORT, HOST, function () {
     // --- LOGIN START ---
     sendPacket(socket, 0x00, writeString(USERNAME));
 });
+var socket2 = net.connect(PORT, HOST, function () {
+    console.log("Connesso al server");
+    // --- HANDSHAKE ---
+    var handshake = Buffer.concat([
+        writeVarInt(PROTOCOL_VERSION),
+        writeString(HOST),
+        Buffer.from([(PORT >> 8) & 0xff, PORT & 0xff]),
+        writeVarInt(2), // next state = login
+    ]);
+    sendPacket(socket2, 0x00, handshake);
+    // --- LOGIN START ---
+    sendPacket(socket2, 0x00, writeString("Bot 2"));
+});
 // --- RECEIVE DATA ---
 socket.on("data", function (data) {
+    buffer = Buffer.concat([buffer, data]);
+    while (true) {
+        var lengthInfo = readVarInt(buffer);
+        if (!lengthInfo)
+            return;
+        var packetLength = lengthInfo.value;
+        var start = lengthInfo.size;
+        if (buffer.length < start + packetLength)
+            return;
+        var packetData = buffer.slice(start, start + packetLength);
+        buffer = buffer.slice(start + packetLength);
+        var idInfo = readVarInt(packetData);
+        var packetId = idInfo.value;
+        var payload = packetData.slice(idInfo.size);
+        handlePacket(packetId, payload);
+    }
+});
+socket2.on("data", function (data) {
     buffer = Buffer.concat([buffer, data]);
     while (true) {
         var lengthInfo = readVarInt(buffer);
